@@ -1,1 +1,25 @@
+import RPi.GPIO as GPIO
+import time
 
+GPIO.setmode(GPIO.BCM)
+
+finger_pins = [3,2,21]
+
+GPIO.setup(2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(3,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(21,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+while True:
+  index_status = GPIO.input(finger_pins[0])
+  thumb_status = GPIO.input(finger_pins[1])
+  click_status = GPIO.input(finger_pins[2])
+  if click_status == 0:
+      index_status = 0
+      thumb_status = 0
+      print("Hand Gesture: Selection")
+  if index_status == 1:
+      print("Motion: Index Finger Bent")
+  if thumb_status == 1:
+      print("Motion: Thumb Bent")
+  
+  time.sleep(0.5)
