@@ -1,0 +1,46 @@
+Creating a Simple and Inexpensive Control Glove with a Raspberry Pi
+
+Introduction
+At the heart of many prosthetics, there is some form of control. One of the simplest ones is a control glove. The problem with many of the DIY control gloves? They use flex sensors to detect how much the finger is flexed and control a prosthetic that way. This is the best way for accurate prosthetics, but flex sensors are expensive, ranging from 10 to 15 dollars for the price of one. If the application is only for a VERY simple control glove, we can survive with only binary values being returned - flexed or not flexed. And that's where this control glove's design comes from.
+Idea 
+I was wearing a gardening glove and just picturing ways of detecting flexion in the simplest way possible - no sensors, just elegant design, and I found an idea. If you position two wires touching each other at the PIP joint, one coming from the DIP joint, and one coming from the MCP joint, when the finger bends, the wires will disconnect and the circuit will be broken. With some simple programming, the Raspberry Pi GPIO pins can be used to detect a HIGH or LOW state, aka STRAIGHT or BENT. 
+This is the main idea, but there are some other design considerations I made. Male wires' tips are thin, and even some sort of movement could change the state. Therefore, we should have a wide surface for both. My first thought was to put solder on the wire and flatten it, but I wanted to make it as beginner friendly as possible. Instead, I used the strips from a solderless breadboard (provided in most beginner maker kits) for the surface. 
+I wanted the project to end as an input device for a GUI, and the middle, ring, and pinky finger don't serve much purpose as input devices. Instead, I went with three circuits - one for the index finger, one for the thumb, and one on the palm side, on the tips of the thumb and index finger. The two former circuits test if the finger is bent or not, while the final one tests if the finger and thumb tips are touching.
+Testing
+To test the breadboard strips' connections on the PIP joints, I used a simple LED circuit to test if the connections worked, without any microcontrollers.
+Circuit DiagramThe 5V symbol denotes a battery. The left side is GND and directly connects to the LED. The right side is 5V and connects to the switch (which is the two breadboard strips on the DIP knuckle). When the circuit is open, the power will flow through the blue wire and turn on the LED, and when it's closed, the power won't reach the LED. This is a simple way of testing the connections without any programming.
+
+Wiring
+Each finger has two wires. One will connect to GND, one will connect to a GPIO pin to see if the circuit is broken or closed. 
+Each finger should connect like the above picture, with the switch denoting the breadboard strips on the DIP knuckle. 
+
+Code
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+
+finger_pins = [3,2,21]
+
+GPIO.setup(2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(3,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(21,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+while True:
+  index_status = GPIO.input(finger_pins[0])
+  thumb_status = GPIO.input(finger_pins[1])
+  click_status = GPIO.input(finger_pins[2])
+  if click_status == 0:
+      index_status = 0
+      thumb_status = 0
+      print("Hand Gesture: Selection")
+  if index_status == 1:
+      print("Motion: Index Finger Bent")
+  if thumb_status == 1:
+      print("Motion: Thumb Bent")
+  
+  time.sleep(0.5)
+In this code, we import the GPIO module for Raspberry Pi, and the time module, set up the GPIO pins as an input with an internal pull-down resistor, and then get the status of the thumb, index, and whether they are touching, in a Boolean value - HIGH or LOW (0 or 1). We then use if statements, and print out which hand gesture or motion is being performed. 
+
+Conclusion
+There are a lot of applications for a control glove like this - you could add haptic feedback, use the data for hand tracking, manipulate GUIs as an input device, and more. Hopefully you learned something about electronics or prosthetics from this article!
